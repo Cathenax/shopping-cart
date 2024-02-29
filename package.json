@@ -36,6 +36,7 @@
     ]
   },
   "devDependencies": {
+    "antd": "^5.14.2",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react": "^7.33.2",
     "firebase": "^10.8.0",
