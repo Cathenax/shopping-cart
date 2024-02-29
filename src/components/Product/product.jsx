@@ -1,20 +1,21 @@
 import React from "react";
-import { Card, Button } from "antd";
-
-const { Meta } = Card;
+import { Button } from "antd";
 
 export default function Product(prop) {
-  const {name, price, imgUrl} = prop;
+  const {name, price} = prop.item;
   return (
-    <Card
-      hoverable
+    <div 
       style={{
-        width: 240,
+        width:"100%"
       }}
-      cover={<img alt="image" src={imgUrl} />}
     >
-      <Meta title={name} description={`$${price}`} />
-      <Button type="primary">Add to Cart</Button> 
-    </Card>
+      <div>
+        <span style={{marginRight:"10px"}}>{name}</span>
+        <span>${price}</span>
+      </div>
+      <div>
+        <Button type="primary">Remove</Button>
+      </div>
+    </div>
   );
 }

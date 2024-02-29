@@ -1,11 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Space, Table, Button, Card } from "antd";
 import {
   PlusOutlined,
 } from "@ant-design/icons";
 
+import mydb from "../../firestore/MyFirestore";
+import AddProduct from "../AddProduct/add-product";
 
 export default function ProductList() {
+  let addFormRef = React.createRef();
+  // set columns of the antd table
   const columns = [
     {
       title: "Product Name",
@@ -25,9 +29,10 @@ export default function ProductList() {
       dataIndex: "image",
       key: "image",
       render: (image) => (
-        <img width={150} src={image}></img>
+        <img style={{width:"100%", minWidth:50, maxWidth:100}} src={image}></img>
       ),
       align:"center",
+      width:"30%"
     },
     {
       title: "Action",
@@ -42,24 +47,67 @@ export default function ProductList() {
       align:"center",
     },
   ];
+  const [productList, setProductList] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const data = [
-    {
-      id: 1,
-      key: "1",
-      name: "Pizza",
-      price: 9.99,
-      image: "https://www.foodandwine.com/thmb/4qg95tjf0mgdHqez5OLLYc0PNT4=/750x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/classic-cheese-pizza-FT-RECIPE0422-31a2c938fc2546c9a07b7011658cfd05.jpg",
-    },
-  ];
+  async function getProductList(){
+    // after the component mounts
+    console.log("Component mounted");
+    // get data
+    const list = await mydb.getProductList();
+    console.log(list);
+    // set state
+    setProductList(list);
+  }
 
+  // get data from database after component mounts
+  useEffect(() => {
+    //doing something async needs to code like this
+    //instead of making the arrow function async
+    //need to code a new asynce function
+    getProductList();
+    // return a function to clear side effects
+    return () => {
+      console.log("Component unmounted");
+    };
+  }, []);
+
+  // information for the card
   const title = (<span>Product List</span>);
   const extra = (
-    <Button type='primary'>
+    <Button onClick={() => setIsModalOpen(true)} type='primary'>
       <PlusOutlined />
       Add New Product
     </Button>
   );
+
+  // handle cancel of the add new product modal
+  const handleCancel = () => {
+    // console.log(addFormRef);
+    // reset all the inputs
+    addFormRef.current.resetFields();
+    // close the modal
+    setIsModalOpen(false);
+  };
+
+  // handle ok of the add new product modal
+  const handleOk = () => {
+    // add to the firebase
+    addFormRef.current.validateFields()
+      .then(async(values)=>{
+        // console.log(values);
+        await mydb.addNewProduct(values);
+        getProductList();
+        // reset all the inputs
+        addFormRef.current.resetFields();
+        // close the modal
+        setIsModalOpen(false);  
+      })
+      .catch((err)=>{
+        console.log(err);
+      }); 
+  };
+
 
   return (
     <Card
@@ -68,14 +116,21 @@ export default function ProductList() {
       style={{
         width: "100%",
         height: "100%",
+        overflow: "auto"
       }}
     >
-      <Table 
+      <Table
         rowKey="id"
         columns={columns} 
-        dataSource={data} 
-        pagination={{defaultPageSize: 5, showQuickJumper: true,}}
+        dataSource={productList} 
+        pagination={{defaultPageSize: 4, showQuickJumper: true,}}
         bordered
+      />
+      <AddProduct 
+        isModalOpen={isModalOpen} 
+        handleOk={handleOk} 
+        handleCancel={handleCancel}
+        formRef={addFormRef}
       />
     </Card>
   );
