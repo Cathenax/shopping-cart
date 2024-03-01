@@ -1,8 +1,10 @@
 import React from "react";
 import { Button } from "antd";
+import PropTypes from "prop-types";
 
-export default function Product(prop) {
-  const {name, price} = prop.item;
+export default function Product(props) {
+  const {item, removeFromCart} = props;
+  const {name, price, number} = item;
   return (
     <div 
       style={{
@@ -14,8 +16,16 @@ export default function Product(prop) {
         <span>${price}</span>
       </div>
       <div>
-        <Button type="primary">Remove</Button>
+        <span>number:{number}</span>
+      </div>
+      <div>
+        <Button type="primary" onClick={() => removeFromCart(item)}>Remove</Button>
       </div>
     </div>
   );
 }
+
+Product.propTypes = {
+  item: PropTypes.object.isRequired,
+  removeFromCart: PropTypes.func.isRequired,
+};

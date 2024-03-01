@@ -1,14 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Space, Table, Button, Card } from "antd";
 import {
   PlusOutlined,
 } from "@ant-design/icons";
+import PubSub from "pubsub-js";
 
 import mydb from "../../firestore/MyFirestore";
 import AddProduct from "../AddProduct/add-product";
 
 export default function ProductList() {
-  let addFormRef = React.createRef();
+  const formRef = useRef();
+  const [productList, setProductList] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [product, setProduct] = useState(null);
+
   // set columns of the antd table
   const columns = [
     {
@@ -37,25 +42,39 @@ export default function ProductList() {
     {
       title: "Action",
       key: "action",
-      render: () => (
+      render: (product) => (
         <Space size="middle">
-          <a>Add to Cart</a>
+          <a onClick={() => addToCart(product)}>Add to Cart</a>
           <br></br>
-          <a>Edit</a>
+          <a onClick={() => openEditProduct(product)}>Edit</a>
         </Space>
       ),
       align:"center",
     },
   ];
-  const [productList, setProductList] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const addToCart = async(product) => {
+    await mydb.addToCart(product);
+    // notify the shopping cart to refresh
+    PubSub.publish("cartRefresh", true);
+  };
+
+  const openAddProduct = () => {
+    setProduct(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditProduct = (product) => {
+    setProduct(product);
+    setIsModalOpen(true);
+  };
 
   async function getProductList(){
     // after the component mounts
-    console.log("Component mounted");
+    // console.log("Component mounted");
     // get data
     const list = await mydb.getProductList();
-    console.log(list);
+    // console.log(list);
     // set state
     setProductList(list);
   }
@@ -68,14 +87,14 @@ export default function ProductList() {
     getProductList();
     // return a function to clear side effects
     return () => {
-      console.log("Component unmounted");
+      // console.log("Component unmounted");
     };
   }, []);
 
   // information for the card
   const title = (<span>Product List</span>);
   const extra = (
-    <Button onClick={() => setIsModalOpen(true)} type='primary'>
+    <Button onClick={() => openAddProduct()} type='primary'>
       <PlusOutlined />
       Add New Product
     </Button>
@@ -83,29 +102,53 @@ export default function ProductList() {
 
   // handle cancel of the add new product modal
   const handleCancel = () => {
-    // console.log(addFormRef);
     // reset all the inputs
-    addFormRef.current.resetFields();
+    formRef.current.resetFields();
     // close the modal
     setIsModalOpen(false);
   };
 
   // handle ok of the add new product modal
   const handleOk = () => {
-    // add to the firebase
-    addFormRef.current.validateFields()
-      .then(async(values)=>{
-        // console.log(values);
-        await mydb.addNewProduct(values);
-        getProductList();
-        // reset all the inputs
-        addFormRef.current.resetFields();
-        // close the modal
-        setIsModalOpen(false);  
-      })
-      .catch((err)=>{
-        console.log(err);
-      }); 
+    // if adding new product
+    if(product === null){
+      // add to the firebase
+      formRef.current.validateFields()
+        .then(async(values)=>{
+          // console.log(values);
+          const newPrice = 1 * values.price;
+          const newProduct = {...values, price:newPrice };
+          await mydb.addNewProduct(newProduct);
+          getProductList();
+          // reset all the inputs
+          formRef.current.resetFields();
+          // close the modal
+          setIsModalOpen(false);  
+        })
+        .catch((err)=>{
+          console.log(err);
+        }); 
+    }
+    // updating an existed product
+    else{
+      // update the doc in the firebase
+      formRef.current.validateFields()
+        .then(async(values)=>{
+          const updateID = product.id;
+          const updatePrice = 1 * values.price;
+          const updateProduct = {...values, price:updatePrice, id:updateID };
+          // console.log("Update Product", updateProduct, "Prev Product", product);
+          await mydb.updateProduct(updateProduct);
+          getProductList();
+          // reset all the inputs
+          formRef.current.resetFields();
+          // close the modal
+          setIsModalOpen(false);  
+        })
+        .catch((err)=>{
+          console.log(err);
+        }); 
+    }
   };
 
 
@@ -130,9 +173,9 @@ export default function ProductList() {
         isModalOpen={isModalOpen} 
         handleOk={handleOk} 
         handleCancel={handleCancel}
-        formRef={addFormRef}
+        formRef={formRef}
+        product={product}
       />
     </Card>
   );
 }
-

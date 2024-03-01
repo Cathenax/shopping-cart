@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 // import { getAnalytics } from "firebase/analytics";
-import { getFirestore, collection, getDocs, addDoc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, orderBy, increment, where, deleteDoc } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -26,7 +26,9 @@ function MyFirestore(){
   const db = getFirestore(app);
 
   const getProductList = async() =>{
-    const querySnapshot = await getDocs(collection(db, "ProductList"));
+    const productRef = collection(db, "ProductList");
+    const q = query(productRef, orderBy("price" ));
+    const querySnapshot = await getDocs(q);
     let data = [];
     querySnapshot.forEach((doc) => {
       // doc.data() is never undefined for query doc snapshots
@@ -44,12 +46,11 @@ function MyFirestore(){
     querySnapshot.forEach((doc) => {
       // doc.data() is never undefined for query doc snapshots
       const curData = doc.data();
-      curData.id = doc.id;
       data.push(curData);
     });
     return data;
   };
-
+  
   const addNewProduct = async(product) =>{
     // Add a new document in collection "ProductList"
     const docRef = await addDoc(collection(db, "ProductList"), {
@@ -57,15 +58,63 @@ function MyFirestore(){
       price: product.price,
       image: product.image,
     });
-    console.log("new docid:",docRef.id);
+    // console.log("new docid:",docRef.id);
     return docRef.id;
+  };
+
+  const updateProduct = async(product) =>{
+    const curRef = doc(db, "ProductList", product.id);
+    await updateDoc(curRef, {
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    });
+  };
+
+  const addToCart = async(product) => {
+    // look for possible same product in the cart
+    const shoppingCartRef = collection(db, "ShoppingCart");
+    const q = query(shoppingCartRef, where("productID", "==", product.id));
+    const querySnapshot = await getDocs(q);
+    if(!querySnapshot.empty){
+      console.log(querySnapshot);
+      const doc = querySnapshot.docs[0];
+      // console.log("Document data exists:", doc);
+      // console.log(doc.id, " => ", doc.data(), doc.ref);
+      
+      // Atomically increment the number of the product by 1
+      await updateDoc(doc.ref, {
+        number: increment(1),
+      });
+    }
+    else{
+      // Document data does not exist, creating new doc
+      // Add a new document in collection "ShoppingCart"
+      await addDoc(collection(db, "ShoppingCart"), {
+        productID: product.id,
+        name: product.name,
+        price: product.price,
+        number: 1,
+      });
+    }
+  };
+
+  const removeFromCart = async(product) => {
+    const shoppingCartRef = collection(db, "ShoppingCart");
+    const q = query(shoppingCartRef, where("productID", "==", product.productID));
+    const querySnapshot = await getDocs(q);
+    const docRef = querySnapshot.docs[0].ref;
+
+    // Remove the document
+    await deleteDoc(docRef);
   };
 
   db.getProductList = getProductList;
   db.getShoppingCart = getShoppingCart;
   db.addNewProduct = addNewProduct;
-
-  // addNewProduct({name:"test",price:0,image:"https://images.albertsons-media.com/is/image/ABS/960038585-ECOM?$ng-ecom-pdp-tn$&defaultImage=Not_Available"});
+  db.updateProduct = updateProduct;
+  db.addToCart = addToCart;
+  db.removeFromCart = removeFromCart;
 
   return db;
 }
