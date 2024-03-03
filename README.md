@@ -1,70 +1,34 @@
-# Getting Started with Create React App
+# Shopping Cart
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is created for CS5010 Homework3 @NEU. Implemented by Siyuan Liu.  
+In conclusion, this application allows you to add/edit the product in the product list and add/remove them from your shopping cart.   
+All data are stored in the Firestore database. Notice that for the product image you need to provide a valid image url to show it in the product list table.  
+The preview of the application looks like the image below.
+![Image of the game](/shopping-cart.png)
 
-## Available Scripts
+## Try It Online
 
-In the project directory, you can run:
+Use the link below to try to use the application online.  
+https://cathenax.github.io/shopping-cart/
 
-### `npm start`
+## Run In Development Mode
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Clone the code and in the project directory use `npm install` and `npm start` to run the code in development mode. Open http://localhost:3000 to view it in your browser.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Presentation Video
 
-### `npm test`
+See presentation video using the link below to get a grasp of how this application works.  
+https://drive.google.com/file/d/1gF7YRr9aToOHfxf6cTjZIVxujexp430-/view?usp=sharing
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Methods Used to Build the Project
 
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This section describes how I develop the whole application.  
+1. Use npx create-react-app to create the application, and install eslint, prettier, PubSub and other dependencies.
+2. Use Layout, Table, Card of Ant Design and other CSS stylesheet to build up a basic framework of the application.
+3. Set up the Firestore database by following the documentation of Firebase. In the database I have two collections named ProductList and ShoppingCart.
+   1. ProductList stores the available products, each has attributes of name, price, image (a string of the image url). 
+   2. ShoppingCart stores the products in the shopping cart, each document has attributes of name, productID(which is the same as one of the ID of the document in ProductList), price and number(the count of the product in the cart).
+4. Separate my application into different components such as product, product list, shopping cart, and a add product panel. Carefully designed them and established a basic structure.
+5. Implement a MyFirebase.js file to initialize and export Firestore service. Inside I put the function needed for CRUD, such as `addNewProduct(product)`and `addToCart(product)`.
+6. Keep working on the components to implement onClick event handler and use the function of MyFirestore to send request to Firestore. Specifically, I use PubSub to send messages between two components that has no direct connection, so that I can notify the shopping cart component to refresh the shopping cart when I click on add to cart in the product list table.
+7. Deploy the application on the github pages. I use the gh-pages to help deploy, which creates and uses a gh-pages branch as the github pages source.

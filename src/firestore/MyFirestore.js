@@ -27,7 +27,7 @@ function MyFirestore(){
 
   const getProductList = async() =>{
     const productRef = collection(db, "ProductList");
-    const q = query(productRef, orderBy("price" ));
+    const q = query(productRef, orderBy("price"));
     const querySnapshot = await getDocs(q);
     let data = [];
     querySnapshot.forEach((doc) => {
