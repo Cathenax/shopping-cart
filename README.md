@@ -1,6 +1,6 @@
 # Shopping Cart
 
-This project is created for CS5010 Homework3 @NEU. Implemented by Siyuan Liu.  
+This project is created for CS5010 Homework3 @NEU. Implemented by Siyuan Liu (Or Cathy).  
 In conclusion, this application allows you to add/edit the product in the product list and add/remove them from your shopping cart.   
 All data are stored in the Firestore database. Notice that for the product image you need to provide a valid image url to show it in the product list table.  
 The preview of the application looks like the image below.
