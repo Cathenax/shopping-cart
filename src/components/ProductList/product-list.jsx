@@ -14,7 +14,7 @@ export default function ProductList() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [product, setProduct] = useState(null);
 
-  // set columns of the antd table
+  // set columns of the and table
   const columns = [
     {
       title: "Product Name",
@@ -74,7 +74,7 @@ export default function ProductList() {
     // console.log("Component mounted");
     // get data
     const list = await mydb.getProductList();
-    // console.log(list);
+    
     // set state
     setProductList(list);
   }
@@ -85,10 +85,7 @@ export default function ProductList() {
     //instead of making the arrow function async
     //need to code a new asynce function
     getProductList();
-    // return a function to clear side effects
-    return () => {
-      // console.log("Component unmounted");
-    };
+    
   }, []);
 
   // information for the card
