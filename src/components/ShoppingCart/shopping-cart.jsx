@@ -6,7 +6,6 @@ import PubSub from "pubsub-js";
 
 export default function ShoppingCart() {
   const [productList, setProductList] = useState([]);
-  // useEffect(updateList, mydb.getShoppingCart());
 
   async function getShoppingCartList(){
     // after the component mounts
